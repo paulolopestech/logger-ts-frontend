@@ -1,17 +1,41 @@
 import React, { useState, useEffect } from "react";
-import logo from "./logo.svg";
 import "./App.css";
 import { getLogs } from "./axios";
-import { Typography, Box } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
+} from "@mui/material";
 
 function App() {
   const [data, setData] = useState([]);
+  const [filters, setFilters] = useState({});
+
+  const [filterConnection, setFilterConnection] = useState(false);
+  const [filterDisconnection, setFilterDisconnection] = useState(false);
+  const [filterException, setFilterException] = useState(false);
+  const [filterWarning, setFilterWarning] = useState(false);
+  const [filterInfo, setFilterInfo] = useState(false);
+
+  const setAllFiltersFalse = () => {
+    setFilterInfo(false)
+    setFilterWarning(false)
+    setFilterException(false)
+    setFilterDisconnection(false)
+    setFilterConnection(false)
+  }
+
+  const cleanFilters = () => {
+    setFilters({});
+  }
 
   const fetchDataFromHTTP = async () => {
     try {
-      const response = await getLogs();
-      console.log("res:::", response);
-      setData(response.data);
+      const response = await getLogs(filters);
+      const reverseData = response.data.reverse();
+      setData(reverseData);
     } catch (error) {
       console.error("Erro na consulta HTTP:", error);
     }
@@ -19,18 +43,15 @@ function App() {
 
   useEffect(() => {
     fetchDataFromHTTP();
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     const socket = new WebSocket("ws://localhost:3003");
 
     const handleWebSocketMessage = (event) => {
       const newWebSocketData = JSON.parse(event.data);
-      console.log("NEW DATA::::", event);
-      console.log("NEW newData::::", newWebSocketData);
       const dataCP = JSON.parse(JSON.stringify(data));
-      setData([...dataCP, newWebSocketData]);
-      console.log("UP DATA:::", data);
+      setData([newWebSocketData, ...dataCP]);
     };
 
     socket.addEventListener("message", handleWebSocketMessage);
@@ -42,22 +63,195 @@ function App() {
   }, [data]);
 
   return (
-    <Box>
-      <Box sx={{width: '1000px'}}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "row",
+        width: "100vw",
+        height: "100vh",
+        background: "#000",
+      }}
+    >
+      <Box sx={{ width: "20%", background: "grey" }}>
+        <Box sx={{ textAlign: "center", mt: 1 }}>
+          <Typography
+            sx={{ color: "#FFF", fontWeight: "bold", fontSize: "30px" }}
+          >
+            {" "}
+            Filtros{" "}
+          </Typography>
+        </Box>
+        <Box sx={{ color: "#FFF" }}>
+          <FormGroup >
+            <FormControlLabel
+              sx={{
+                background: "#FFF",
+                m: 1,
+                borderRadius: "1px",
+                color: "#000",
+              }}
+              control={
+                <Checkbox
+                checked={filterInfo}
+                  onChange={(e) => {
+                    setAllFiltersFalse();
+                    if (e.target.checked) {
+                      setFilters({ type: "info" });
+                      setFilterInfo(true);
+                      return;
+                    }
+                    cleanFilters()
+                  }}
+                />
+              }
+              label="info"
+            />
+            <FormControlLabel
+              sx={{
+                background: "#FFF",
+                m: 1,
+                borderRadius: "1px",
+                color: "#000",
+              }}
+              control={
+                <Checkbox
+                checked={filterWarning}
+                  onChange={(e) => {
+                    setAllFiltersFalse();
+                    if (e.target.checked) {
+                      setFilters({ type: "warning" });
+                      setFilterWarning(true)
+                      return;
+                    }
+                    cleanFilters()
+                  }}
+                />
+              }
+              label="warning"
+            />
+            <FormControlLabel
+              sx={{
+                background: "#FFF",
+                m: 1,
+                borderRadius: "1px",
+                color: "#000",
+              }}
+              control={
+                <Checkbox
+                checked={filterException}
+                  onChange={(e) => {
+                    setAllFiltersFalse();
+                    if (e.target.checked) {
+                      setFilters({ type: "exception" });
+                      setFilterException(true);
+                      return;
+                    }
+                    cleanFilters()
+                  }}
+                />
+              }
+              label="exception"
+            />{" "}
+            <FormControlLabel
+              sx={{
+                background: "#FFF",
+                m: 1,
+                borderRadius: "1px",
+                color: "#000",
+              }}
+              control={
+                <Checkbox
+                checked={filterDisconnection}
+                  onChange={(e) => {
+                    setAllFiltersFalse();
+                    if (e.target.checked) {
+                      setFilters({ type: "disconnection" });
+                      setFilterDisconnection(true);
+                      return;
+                    }
+                    cleanFilters()
+                  }}
+                />
+              }
+              label="disconnection"
+            />{" "}
+            <FormControlLabel
+              sx={{
+                background: "#FFF",
+                m: 1,
+                borderRadius: "1px",
+                color: "#000",
+              }}
+              control={
+                <Checkbox
+                checked={filterConnection}
+                  onChange={(e) => {
+                    setAllFiltersFalse();
+                    if (e.target.checked) {
+                      setFilters({ type: "connection" });
+                      setFilterConnection(true);
+                      return;
+                    }
+                    cleanFilters()
+                  }}
+                />
+              }
+              label="connection"
+            />
+          </FormGroup>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          width: "80%",
+          maxHeight: "97%",
+          overflow: "scroll",
+          overflowX: "hidden",
+          background: "#000",
+          pt: 1,
+        }}
+      >
         {data.map((item) => {
           const time = new Date(item.timestamp).toLocaleString();
-          const color = item.priority === 0 ? 'red' : item.priority === 1 ? 'orange' : 'black'
-          const bold = item.priority === 0 ? 'bold' : item.priority === 1 ? 'bold' : 'thin'
+          const background =
+            item.priority === 0
+              ? "red"
+              : item.priority === 1
+              ? "orange"
+              : item.type === "connection"
+              ? "green"
+              : "white";
+          const bold =
+            item.priority === 0
+              ? "bold"
+              : item.priority === 1
+              ? "bold"
+              : "thin";
           return (
-            <Box sx={{ display: "flex", flexDirection: "row", background: '#d7d7d9', m: 1 }}>
-              <Typography sx={{ pr: 1, fontSize: '10px', color: color, fontWeight: bold }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                background: background,
+                m: 1,
+                border: "solid 1px",
+                p: 1,
+              }}
+            >
+              <Typography sx={{ pr: 1, fontSize: "13px", fontWeight: bold }}>
                 Aplicação: {item.applicationID}
               </Typography>
-              <Typography sx={{ pr: 1, fontSize: '10px', color: color, fontWeight: bold }}>Tipo: {item.type}</Typography>
-              <Typography sx={{ pr: 1, fontSize: '10px', }}>Log: {item.message}</Typography>
-              <Typography sx={{ pr: 1, fontSize: '10px', }}>Horario: {time}</Typography>
-              <Typography sx={{ pr: 1, fontSize: '10px', }}>
-                ID de conexão: {item.applicationID}
+              <Typography sx={{ pr: 1, fontSize: "13px", fontWeight: bold }}>
+                Tipo: {item.type}
+              </Typography>
+              <Typography sx={{ pr: 1, fontSize: "13px" }}>
+                Log: {item.message}
+              </Typography>
+              <Typography sx={{ pr: 1, fontSize: "13px" }}>
+                Horario: {time}
+              </Typography>
+              <Typography sx={{ pr: 1, fontSize: "13px" }}>
+                Aplicação: {item.applicationID}
               </Typography>
             </Box>
           );

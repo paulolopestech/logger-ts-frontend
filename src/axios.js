@@ -4,11 +4,9 @@ const client = axios.create({
     baseURL: 'http://localhost:3001'
   });
 
-export const getLogs = async () => {
+export const getLogs = async (filters) => {
     const response = await client.get('/get-logs', {
-        // params: {
-        //     filters: {"applicationID": "cliente-app"}
-        // }
+      params: filters
     });
     return response;
 }
