@@ -20,16 +20,16 @@ function App() {
   const [filterInfo, setFilterInfo] = useState(false);
 
   const setAllFiltersFalse = () => {
-    setFilterInfo(false)
-    setFilterWarning(false)
-    setFilterException(false)
-    setFilterDisconnection(false)
-    setFilterConnection(false)
-  }
+    setFilterInfo(false);
+    setFilterWarning(false);
+    setFilterException(false);
+    setFilterDisconnection(false);
+    setFilterConnection(false);
+  };
 
   const cleanFilters = () => {
     setFilters({});
-  }
+  };
 
   const fetchDataFromHTTP = async () => {
     try {
@@ -51,6 +51,31 @@ function App() {
     const handleWebSocketMessage = (event) => {
       const newWebSocketData = JSON.parse(event.data);
       const dataCP = JSON.parse(JSON.stringify(data));
+      if (filterInfo) {
+        if (newWebSocketData.type === "info")
+          setData([newWebSocketData, ...dataCP]);
+        return;
+      }
+      if (filterWarning) {
+        if (newWebSocketData.type === "warning")
+          setData([newWebSocketData, ...dataCP]);
+        return;
+      }
+      if (filterException) {
+        if (newWebSocketData.type === "exception")
+          setData([newWebSocketData, ...dataCP]);
+        return;
+      }
+      if (filterConnection) {
+        if (newWebSocketData.type === "connection")
+          setData([newWebSocketData, ...dataCP]);
+        return;
+      }
+      if (filterDisconnection) {
+        if (newWebSocketData.type === "disconnection")
+          setData([newWebSocketData, ...dataCP]);
+        return;
+      }
       setData([newWebSocketData, ...dataCP]);
     };
 
@@ -82,7 +107,7 @@ function App() {
           </Typography>
         </Box>
         <Box sx={{ color: "#FFF" }}>
-          <FormGroup >
+          <FormGroup>
             <FormControlLabel
               sx={{
                 background: "#FFF",
@@ -92,7 +117,7 @@ function App() {
               }}
               control={
                 <Checkbox
-                checked={filterInfo}
+                  checked={filterInfo}
                   onChange={(e) => {
                     setAllFiltersFalse();
                     if (e.target.checked) {
@@ -100,7 +125,7 @@ function App() {
                       setFilterInfo(true);
                       return;
                     }
-                    cleanFilters()
+                    cleanFilters();
                   }}
                 />
               }
@@ -115,15 +140,15 @@ function App() {
               }}
               control={
                 <Checkbox
-                checked={filterWarning}
+                  checked={filterWarning}
                   onChange={(e) => {
                     setAllFiltersFalse();
                     if (e.target.checked) {
                       setFilters({ type: "warning" });
-                      setFilterWarning(true)
+                      setFilterWarning(true);
                       return;
                     }
-                    cleanFilters()
+                    cleanFilters();
                   }}
                 />
               }
@@ -138,7 +163,7 @@ function App() {
               }}
               control={
                 <Checkbox
-                checked={filterException}
+                  checked={filterException}
                   onChange={(e) => {
                     setAllFiltersFalse();
                     if (e.target.checked) {
@@ -146,7 +171,7 @@ function App() {
                       setFilterException(true);
                       return;
                     }
-                    cleanFilters()
+                    cleanFilters();
                   }}
                 />
               }
@@ -161,7 +186,7 @@ function App() {
               }}
               control={
                 <Checkbox
-                checked={filterDisconnection}
+                  checked={filterDisconnection}
                   onChange={(e) => {
                     setAllFiltersFalse();
                     if (e.target.checked) {
@@ -169,7 +194,7 @@ function App() {
                       setFilterDisconnection(true);
                       return;
                     }
-                    cleanFilters()
+                    cleanFilters();
                   }}
                 />
               }
@@ -184,7 +209,7 @@ function App() {
               }}
               control={
                 <Checkbox
-                checked={filterConnection}
+                  checked={filterConnection}
                   onChange={(e) => {
                     setAllFiltersFalse();
                     if (e.target.checked) {
@@ -192,7 +217,7 @@ function App() {
                       setFilterConnection(true);
                       return;
                     }
-                    cleanFilters()
+                    cleanFilters();
                   }}
                 />
               }
