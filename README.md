@@ -10,20 +10,17 @@ Certifique-se de ter o Node.js instalado em sua máquina. Caso contrário, você
 Clone este repositório:
 
 ```bash
-Copy code
 git clone git@github.com:paulolopestech/logger-ts-frontend.git
 ```
 
 Instale as dependências:
 ```bash
-Copy code
 npm install
 ```
 ## Execução
 Após a instalação, você pode iniciar o aplicativo localmente:
 
 ```bash
-Copy code
 npm start
 ```
 
